@@ -81,4 +81,18 @@ public class TodoController : Controller
         return RedirectToAction(nameof(Index));
      }
 
+     public IActionResult ToComplete(int id)
+     {
+        var todo  = _context.Todos.Find(id);
+        if(todo is null)
+        {
+            return NotFound();
+        }
+
+        todo.IsCompleted = true;
+        _context.SaveChanges();
+
+        return RedirectToAction(nameof(Index));
+     }
+
 }
