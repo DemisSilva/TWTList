@@ -36,4 +36,20 @@ public class TodoController : Controller
 
         return RedirectToAction(nameof(Index));
     }
+
+    public IActionResult Create()
+    {
+        ViewData["title"] = "Cadastrar Tarefa";
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult Create(CreateTodoViewModel model)
+    {
+        var todo = new Todo(model.Title, model.Date);
+        _context.Add(todo);
+        _context.SaveChanges();
+        return RedirectToAction(nameof(Index));
+    }
+
 }
