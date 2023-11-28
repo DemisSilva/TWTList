@@ -1,31 +1,32 @@
-using TWTodoList.Contexts;
 using TWTodoList.Exceptions;
 using TWTodoList.Models;
+using TWTodoList.Repositories;
 using TWTodoList.ViewModels;
 
 namespace TWTodoList.Services;
 
 public class TodoService
 {
-    private readonly AppDbContext _context;
+    private readonly TodoRepository _repositoriy;
 
-    public TodoService(AppDbContext context)
+
+    public TodoService(TodoRepository repositoriy)
     {
-        _context = context;
+        _repositoriy = repositoriy;
     }
 
     public ListTodoViewModel FindAll()
     {
-        var todos = _context.Todos.OrderBy(x => x.Date).ToList();
-        return  new ListTodoViewModel{Todos = todos};
+        return  new ListTodoViewModel
+        {
+            Todos = _repositoriy.FindAll(x => x.Date)
+        };
     }
 
     public void Create(CreateTodoViewModel model)
     {
         var todo  = new Todo(model.Title, model.Date);
-        _context.Add(todo);
-        _context.SaveChanges();
-
+        _repositoriy.Create(todo);
     }
 
     public EditTodoViewModel FindById(int id)
@@ -41,15 +42,14 @@ public class TodoService
         todo.Title = model.Title;
         todo.Date = model.Date;
 
-        _context.SaveChanges();
+        _repositoriy.Update(todo);
     }
 
     public void DeleteById(int id)
     {
         var todo = FindByIdOdElseThrow(id);
 
-        _context.Remove(todo);
-        _context.SaveChanges();
+        _repositoriy.Delete(todo);
     }
 
     public void ToComplete(int id)
@@ -58,12 +58,12 @@ public class TodoService
 
         todo.IsCompleted = true;
 
-        _context.SaveChanges();
+        _repositoriy.Update(todo);
     }
 
     private Todo FindByIdOdElseThrow(int id)
     {
-        var todo = _context.Todos.Find(id);
+        var todo = _repositoriy.FindById(id);
 
         if(todo is null)
         {

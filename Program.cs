@@ -1,4 +1,5 @@
 using TWTodoList.Contexts;
+using TWTodoList.Repositories;
 using TWTodoList.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddScoped<TodoService>();
+builder.Services.AddScoped<TodoRepository>();
 
 var app = builder.Build();
 
