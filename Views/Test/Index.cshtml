@@ -1,1 +1,24 @@
-<h1> Ola Trewina Web</h1>
+
+<partial name ="_Header"/>
+
+<p>
+    Nome da tarefa: @ViewBag.Todo.Title
+</p>
+
+@{
+    var cardData = new CardData
+    {
+        Title = "Titulo do card",
+        Subtitle = "Subtitulo do card",
+        Content = "Conteudo do card",
+    };
+}
+
+<partial name ="_Card" model = "cardData"/>
+
+@section Scripts
+{
+    <script>
+        alert("Codigo Js Injetado pela view no template base")    
+    </script>
+}

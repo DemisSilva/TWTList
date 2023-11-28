@@ -2,39 +2,41 @@ using TWTodoList.Contexts;
 using TWTodoList.Models;
 using TWTodoList.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using TWTodoList.Services;
+using TWTodoList.Exceptions;
 
 
 namespace TWTodoList.Controllers;
 
 public class TodoController : Controller
 {
-    private readonly AppDbContext _context;
 
-    public TodoController(AppDbContext context)
+    private readonly TodoService _service;
+
+    public TodoController(TodoService service)
     {
-        _context = context;
+
+        _service = service;
     }
 
     public IActionResult Index()
     {
-        var todos = _context.Todos.OrderBy(x => x.Date).ToList();
-        var viewModel = new ListTodoViewModel{Todos = todos};
         ViewData["Title"] = "Lista de tarefas";
+        var viewModel = _service.FindAll();
         return View(viewModel);
     }
 
     public IActionResult Delete(int id)
     {
-        var todo = _context.Todos.Find(id);
-        if(todo is null)
+        try
+        {
+            _service.DeleteById(id);
+            return RedirectToAction(nameof(Index));
+        }
+        catch (TodoNotFoundException)
         {
             return NotFound();
         }
-
-        _context.Remove(todo);
-        _context.SaveChanges();
-
-        return RedirectToAction(nameof(Index));
     }
 
     public IActionResult Create()
@@ -46,53 +48,50 @@ public class TodoController : Controller
     [HttpPost]
     public IActionResult Create(CreateTodoViewModel model)
     {
-        var todo = new Todo(model.Title, model.Date);
-        _context.Add(todo);
-        _context.SaveChanges();
+        _service.Create(model);
         return RedirectToAction(nameof(Index));
     }
 
-    public IActionResult Edit(int id)
+    public IActionResult Edit(int id) 
     {
-
-        var todo  = _context.Todos.Find(id);
-
-        if(todo is null)
+        try
+        {
+            var viewModel = _service.FindById(id);
+            ViewData["title"] = "Editar Tarefa";
+            return View(viewModel);
+        }
+        catch (TodoNotFoundException)
         {
             return NotFound();
         }
 
-        var viewModel = new EditTodoViewModel {Title = todo.Title, Date = todo.Date};
-        ViewData["title"] = "Editar Tarefa";
-        return View(viewModel);
     }
+
     [HttpPost]
      public IActionResult Edit(int id, EditTodoViewModel model)
      {
-        var todo  = _context.Todos.Find(id);
-        if(todo is null)
+        try
+        {
+            _service.UpdateById(id, model);
+            return RedirectToAction(nameof(Index));
+        }
+        catch(TodoNotFoundException)
         {
             return NotFound();
         }
-        todo.Title = model.Title;
-        todo.Date = model.Date;
-        _context.SaveChanges();
-
-        return RedirectToAction(nameof(Index));
      }
 
      public IActionResult ToComplete(int id)
      {
-        var todo  = _context.Todos.Find(id);
-        if(todo is null)
+        try
+        {
+            _service.ToComplete(id);
+            return RedirectToAction(nameof(Index));
+        }
+        catch(TodoNotFoundException)
         {
             return NotFound();
         }
-
-        todo.IsCompleted = true;
-        _context.SaveChanges();
-
-        return RedirectToAction(nameof(Index));
      }
 
 }
